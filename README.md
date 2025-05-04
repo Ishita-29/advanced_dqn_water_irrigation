@@ -1,4 +1,4 @@
-# 🌱 Advanced DQN for Smart Water Irrigation
+# 🌱 Advanced DQN and PPO for Smart Water Irrigation
 
 This project applies advanced Deep Q-Network (DQN) algorithms and a Policy based algoritm to optimize water irrigation strategies in agriculture. The objective is to maximize crop yield while minimizing water usage through intelligent, data-driven decision-making.
 
