@@ -2,6 +2,10 @@
 
 This project applies advanced Deep Q-Network (DQN) algorithms and a Policy based algoritm to optimize water irrigation strategies in agriculture. The objective is to maximize crop yield while minimizing water usage through intelligent, data-driven decision-making.
 
+This project builds upon CleanRL, a high-quality collection of single-file reinforcement learning implementations. Modified versions of selected agents (e.g., DQN, PPO) were adapted to train in the custom irrigation environment.
+
+Link to CleanRL github: https://github.com/vwxyzjn/cleanrl
+
 ## Overview
 
 We implement and compare the following reinforcement learning agents:
