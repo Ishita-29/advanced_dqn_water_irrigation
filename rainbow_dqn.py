@@ -107,51 +107,7 @@ class Args:
     """ending year for training (inclusive)"""
 
 
-# Noisy Linear Layer for exploration
-# class NoisyLinear(nn.Module):
-#     def __init__(self, in_features, out_features, std_init=0.5):
-#         super().__init__()
-#         self.in_features = in_features
-#         self.out_features = out_features
-#         self.std_init = std_init
-        
-#         # Learnable parameters
-#         self.weight_mu = nn.Parameter(torch.empty(out_features, in_features))
-#         self.weight_sigma = nn.Parameter(torch.empty(out_features, in_features))
-#         self.register_buffer('weight_epsilon', torch.empty(out_features, in_features))
-        
-#         self.bias_mu = nn.Parameter(torch.empty(out_features))
-#         self.bias_sigma = nn.Parameter(torch.empty(out_features))
-#         self.register_buffer('bias_epsilon', torch.empty(out_features))
-        
-#         self.reset_parameters()
-#         self.reset_noise()
-    
-#     def reset_parameters(self):
-#         mu_range = 1 / np.sqrt(self.in_features)
-#         self.weight_mu.data.uniform_(-mu_range, mu_range)
-#         self.weight_sigma.data.fill_(self.std_init / np.sqrt(self.in_features))
-#         self.bias_mu.data.uniform_(-mu_range, mu_range)
-#         self.bias_sigma.data.fill_(self.std_init / np.sqrt(self.out_features))
-    
-#     def _scale_noise(self, size):
-#         x = torch.randn(size)
-#         return x.sign().mul(x.abs().sqrt())
-    
-#     def reset_noise(self):
-#         epsilon_in = self._scale_noise(self.in_features)
-#         epsilon_out = self._scale_noise(self.out_features)
-#         self.weight_epsilon.copy_(torch.outer(epsilon_out, epsilon_in))
-#         self.bias_epsilon.copy_(epsilon_out)
-    
-#     def forward(self, x):
-#         if self.training:
-#             weight = self.weight_mu + self.weight_sigma * self.weight_epsilon
-#             bias = self.bias_mu + self.bias_sigma * self.bias_epsilon
-#         else:
-#             weight = self.weight_mu
-#             bias = self.bias_mu
-#         return F.linear(x, weight, bias)
+
 
 class NoisyLinear(nn.Module):
     def __init__(self, in_features, out_features, std_init=0.1):  # Lower std_init
@@ -187,12 +143,7 @@ class NoisyLinear(nn.Module):
         x = torch.randn(size)
         return x.sign().mul(x.abs().sqrt())
     
-    # def reset_noise(self):
-    #     self.epsilon_in = self._scale_noise(self.in_features)
-    #     self.epsilon_out = self._scale_noise(self.out_features)
-    #     # Use factorized noise for better exploration
-    #     self.weight_epsilon = torch.outer(self.epsilon_out, self.epsilon_in)
-    #     self.bias_epsilon = self.epsilon_out
+   
     
     def reset_noise(self):
         device = self.weight_mu.device 
@@ -210,67 +161,6 @@ class NoisyLinear(nn.Module):
             weight = self.weight_mu
             bias = self.bias_mu
         return F.linear(x, weight, bias)
-    
-# Rainbow DQN Network with distributional RL and dueling architecture
-# class RainbowDQN(nn.Module):
-#     def __init__(self, observation_shape, action_space_n, n_atoms=51, v_min=-300, v_max=4000):
-#         super().__init__()
-#         self.action_space_n = action_space_n
-#         self.n_atoms = n_atoms
-#         self.register_buffer("support", torch.linspace(v_min, v_max, n_atoms))
-        
-#         input_dim = int(np.prod(observation_shape))
-        
-#         # Feature extractor
-#         self.features = nn.Sequential(
-#             nn.Linear(input_dim, 512),
-#             nn.ReLU(),
-#             nn.Linear(512, 256),
-#             nn.ReLU()
-#         )
-        
-#         # Value stream (dueling architecture)
-#         self.value_stream = nn.Sequential(
-#             NoisyLinear(256, 128),
-#             nn.ReLU(),
-#             NoisyLinear(128, n_atoms)
-#         )
-        
-#         # Advantage stream (dueling architecture)
-#         self.advantage_stream = nn.Sequential(
-#             NoisyLinear(256, 128),
-#             nn.ReLU(),
-#             NoisyLinear(128, action_space_n * n_atoms)
-#         )
-    
-#     def forward(self, x):
-#         batch_size = x.size(0)
-#         features = self.features(x)
-        
-#         # Value and advantage streams
-#         value_dist = self.value_stream(features).view(batch_size, 1, self.n_atoms)
-#         advantage_dist = self.advantage_stream(features).view(batch_size, self.action_space_n, self.n_atoms)
-        
-#         # Combine using dueling formula
-#         q_dist = value_dist + advantage_dist - advantage_dist.mean(dim=1, keepdim=True)
-        
-#         # Convert to probabilities
-#         return F.softmax(q_dist, dim=2)
-    
-#     def reset_noise(self):
-#         """Reset noise for all noisy layers"""
-#         for module in self.modules():
-#             if isinstance(module, NoisyLinear):
-#                 module.reset_noise()
-    
-#     def act(self, state, device):
-#         """Select action greedily"""
-#         with torch.no_grad():
-#             state = torch.as_tensor(state, dtype=torch.float32).unsqueeze(0).to(device)
-#             dist = self.forward(state)
-#             expected_value = torch.sum(dist * self.support, dim=2)
-#             action = expected_value.argmax(1).item()
-#         return action
 
 class RainbowDQN(nn.Module):
     def __init__(self, observation_shape, action_space_n, n_atoms=101, v_min=-100, v_max=2000):
@@ -445,11 +335,7 @@ class PrioritizedReplayBuffer:
         # Return batch info
         return observations, actions, next_observations, dones, rewards, weights, indices
     
-    # def update_priorities(self, indices, priorities):
-    #     """Update priorities of sampled transitions"""
-    #     priorities = np.abs(priorities) + self.epsilon
-    #     self.priorities[indices] = priorities ** self.alpha
-    #     self.max_priority = max(self.max_priority, priorities.max())
+   
     def update_priorities(self, indices, priorities):
         """Update priorities of sampled transitions with clipping"""
         priorities = np.clip(np.abs(priorities) + self.epsilon, 1e-6, 100.0)  # Clip to reasonable range
