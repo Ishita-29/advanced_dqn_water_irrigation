@@ -40,16 +40,16 @@ pip install -r requirements.txt
 
 ```bash
 # Train Double DQN
-python double_dqn_clean_rl_enhanced_500k.py
+python double_dqn.py
 
 # Train Rainbow DQN
-python rainbow_clean_rl_enhanced_500k.py
+python rainbow_dqn.py
 
 # Train Vanilla DQN
-python vanilladqn_clean_rl_enhanced_env_500k.py
+python vanilladqn.py
 
 # Train PPO
-python ppo_clean_rl_enhanced_500k.py
+python ppo.py
 ```
 
 ## 🌾 Custom Environment: EnhancedMaize
@@ -182,6 +182,7 @@ Detailed visualization comparisons can be found in the directory after running e
 ├── evaluation_final.py                  
 ├── ppo.py        
 ├── rainbow_dqn.py    
-├── vanilladqn.py                  
+├── vanilladqn.py
+├── requirements.txt                  
 └── README.md                          
 ```
